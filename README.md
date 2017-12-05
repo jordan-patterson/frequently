@@ -8,9 +8,19 @@
 ### - Specify what executables you want to run or websites you want to open whenever you start the script
 
 
+##Installation
+```bash
+$ git clone https://github.com/jordan-patterson/frequently.git
+$ sudo pip3 install requirements.txt
+$ ./install.py
+```
+
+
 ## Usage
 ```bash
-freq -a #run all scripts and websites that you specify
-freq -w #open all specified websites
-freq -e #run all specified scripts
+$ freq -a #run all scripts and websites that you specify 
+$ freq -w #open all specified websites on start
+$ freq -e #run all specified scripts on start
+$ freq -c #run all specified commands on start
+$ freq #does not perform any action
 ```

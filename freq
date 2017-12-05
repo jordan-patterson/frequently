@@ -5,11 +5,15 @@ import webbrowser
 from clmenu import getch,Menu,printLogo
 import yaml
 import argparse
+import pickle
 import subprocess as sub
 
 getch=getch()
 
 def getDict(filename):
+	'''
+		returns a dictionary saved from a yaml file
+	'''
 	with open(filename,"r") as file:
 		data=yaml.load(file)
 	return data
@@ -36,7 +40,7 @@ def openSite():
 		return None
 	options=list(sites.keys())
 	options.append("GO BACK")
-	instructions="\t\t  What should I open?"
+	instructions="\t\t  WHAT SHOULD I OPEN?"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=0
 	while(temp!=len(options)-1):
@@ -65,7 +69,7 @@ def addExistingStartSite():
 		return None
 	options=list(sites.keys())
 	options.append("GO BACK")
-	instructions="\n\t\t\t\tWhat website should I add?"
+	instructions="\n\t\t\t\tWHAT WEBSITE SHOULD I ADD?"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=menu.prompt()
 	if(temp!=len(options)-1):
@@ -79,7 +83,7 @@ def addExistingStartSite():
 
 def addStartUpWebsite():
 	options=["NEW","EXISTING","GO BACK"]
-	instructions="Select the type"
+	instructions="SELECT THE TYPE"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=9
 	while(temp!=len(options)-1):
@@ -89,6 +93,7 @@ def addStartUpWebsite():
 		elif(temp==1):
 			addExistingStartSite()
 
+#takes a filename and a dictionary as arguments, overwrites the file with dictionary
 def update(filename,dictionary):
 	with open(filename,'w') as file:
 		yaml.dump(dictionary,file)
@@ -103,7 +108,7 @@ def removeSite(filename):
 		return None
 	options=list(sites.keys())
 	options.append("GO BACK")
-	instructions="\n\n\t\t\t\tWhat should I remove?"
+	instructions="\n\n\t\t\t\tWHAT SHOULD I REMOVE?"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=menu.prompt()
 	if(temp!=len(options)-1):
@@ -112,7 +117,7 @@ def removeSite(filename):
 
 def website():
 	options=["OPEN WEBSITE","ADD WEBSITE","REMOVE WEBSITE","ADD WEBSITE ON STARTUP","REMOVE WEBSITE FROM STARTUP","GO BACK"]
-	instructions="\tWhat action should I take?"
+	instructions="\tWHAT ACTION SHOULD I TAKE?"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=0
 	while(temp!=len(options)-1):
@@ -156,6 +161,7 @@ def addNewStartupScript():
 	try:
 		scripts=getDict("startupScripts.yml")
 	except:
+		#create new dict
 		scripts={}
 	printLogo("logo.txt")
 	name=input("\n\n\t\t\t Enter the name you wish to call the executable: ")
@@ -175,7 +181,7 @@ def addExistingStartupScript():
 		return None
 	options=list(existing_scripts.keys())
 	options.append("GO BACK")
-	instructions="\tWhat executable should I add?"
+	instructions="\tWHAT EXECUTABLE SHOULD I ADD?"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=menu.prompt()
 	if(temp!=len(options)-1):
@@ -189,7 +195,7 @@ def addExistingStartupScript():
 
 def addScriptOnStartup():
 	options=["NEW","EXISTING","GO BACK"]
-	instructions="\t   Select the type"
+	instructions="\t   SELECT THE TYPE"
 	menu=Menu(options,instructions,"logo.txt")
 	temp=9
 	while(temp!=len(options)-1):
@@ -218,11 +224,11 @@ def removeScript(filename):
 
 def run(path):
 	maindir=os.getcwd()
-	executable=path.split('/')[-1]
+	executable=path.split('/')[-1]#obtain name of executable from path
 	path=path.strip(executable)
 	os.chdir(path)#go to directory where executable is located
 	os.system("gnome-terminal -e './"+executable+"'")
-	os.chdir(maindir)#come back to program's directory
+	os.chdir(maindir)#return back to program's directory
 
 def runScript():
 	try:
@@ -269,21 +275,152 @@ def openTerminal():
 		except:
 			continue
 
+def removeCommand(filename):
+	commands=getCommands(filename)
+	if(commands):
+		commands.append("GO BACK")
+		instructions="\t SELECT A COMMAND TO REMOVE"
+		menu=Menu(commands,instructions,"logo.txt")
+		temp=menu.prompt()
+		if(temp!=len(commands)-1):
+			commands.remove(commands[temp])
+			commands.remove("GO BACK")
+			#update file
+			updateCommands(commands,filename)
+	else:
+		printLogo("logo.txt")
+		print("\n\t\t\t\tError: There are no commands to be removed")
+		getch()
+
+def removeCommands():
+	options=["REMOVE FROM STARTUP","OTHER","GO BACK"]
+	instructions="WHAT SHOULD I REMOVE?"
+	menu=Menu(options,instructions,"logo.txt")
+	temp=0
+	while(temp!=len(options)-1):
+		temp=menu.prompt()
+		if(temp==0):
+			removeCommand("commandOnStart.dat")
+		elif(temp==1):
+			removeCommand("commands.dat")
+
+def updateCommands(commands,filename):
+	with open(filename,"wb") as file:
+		pickle.dump(commands,file)
+
+def addExisitingCommandOnStart():
+	commands=getCommands("commands.dat")
+	if(commands):
+		commands.append("GO BACK")
+		instructions="SELECT A COMMAND"
+		menu=Menu(commands,instructions,"logo.txt")
+		temp=menu.prompt()
+		if(temp!=len(commands)-1):# if commands[temp]!="GO BACK"
+			addCommand(commands[temp],"commandOnStart.dat")
+	else:
+		printLogo("logo.txt")
+		print("\n\t\t\t\tError: No existing commands were found")
+		getch()
+
+def addCommandOnStartup():
+	options=["NEW","EXISTING","GO BACK"]
+	instructions="\tSELECT THE TYPE"
+	menu=Menu(options,instructions,"logo.txt")
+	temp=0
+	while(temp!=len(options)-1):
+		temp=menu.prompt()
+		if(temp==0):
+			printLogo("logo.txt")
+			command=input("\n\t\t\t\tENTER THE COMMAND: ")
+			addCommand(command,"commandOnStart.dat")
+		elif(temp==1):
+			addExisitingCommandOnStart()
+
+def addCommand(command,filename):
+	commands=getCommands(filename)
+	if(commands):
+		commands.append(command)
+	else:
+		#create new list
+		commands=[command]
+	#overwrite or add updated list to file
+	updateCommands(commands,filename)
+
+def getCommands(filename):
+	'''
+		returns a list of strings saved to a file called filename
+	'''
+	try:
+		file=open(filename,"rb")
+		commands=pickle.load(file)
+		return commands
+	except:
+		return None
+
+def runCommand():
+	commands=getCommands("commands.dat")
+	if(commands):
+		commands.append("GO BACK")
+		instructions="Which command should I run?"
+		menu=Menu(commands,instructions,"logo.txt")
+		temp=menu.prompt()
+		if(temp!=len(commands)-1):#if commands[temp]!="GO BACK"
+			startCommand(commands[temp])
+	else:
+		printLogo("logo.txt")
+		print("\n\t\t\t\tError: No commands were found")
+		getch()
+
+def commands():
+	options=["RUN COMMAND","ADD COMMAND","ADD COMMAND ON STARTUP","REMOVE","GO BACK"]
+	instructions="What action should I take?"
+	menu=Menu(options,instructions,"logo.txt")
+	temp=0
+	while(temp!=len(options)-1):
+		temp=menu.prompt()
+		if(temp==0):
+			runCommand()
+		elif(temp==1):
+			printLogo("logo.txt")
+			command=input("\n\t\t\t\tEnter the new command: ")
+			addCommand(command,"commands.dat")
+		elif(temp==2):
+			addCommandOnStartup()
+		elif(temp==3):
+			removeCommands()
+
 def main():
-	options=["WEBSITE","EXECUTABLE","TERMINAL","TEXT EDITOR","EXIT"]
+	options=["COMMAND","WEBSITE","EXECUTABLE","TERMINAL","TEXT EDITOR","EXIT"]
 	instructions=" "
 	menu=Menu(options,instructions,"logo.txt")
 	temp=9
 	while(temp!=len(options)-1):
 		temp=menu.prompt()
 		if(temp==0):
-			website()
+			commands()
 		elif(temp==1):
-			scripts()
+			website()
 		elif(temp==2):
-			openTerminal()
+			scripts()
 		elif(temp==3):
+			openTerminal()
+		elif(temp==4):
 			openTextEditor()
+
+def startCommand(command):
+	terminal_commands=["konsole","gnome-terminal","xterm"]
+	for terminal in terminal_commands:
+		try:
+			sub.Popen([terminal,'-e',command],stdout=sub.PIPE,stderr=sub.PIPE)
+			break
+		except:
+			continue
+
+def startAllCommands():
+	commands=getCommands("commandOnStart.dat")
+	if(commands):
+		for command in commands:
+			startCommand(command)
 
 def startallWebsites():
 	try:
@@ -306,13 +443,17 @@ if __name__=="__main__":
 	parser.add_argument('-a','--all',help="Starts all listed scripts and websites on start",action="store_true")
 	parser.add_argument('-w','--web',help="Starts all listed websites on start",action="store_true")
 	parser.add_argument('-e','--ex',help="Starts all listed executables on start",action="store_true")
+	parser.add_argument('-c','--co',help="Starts all listed commands on start",action="store_true")
 	args=parser.parse_args()
 	if(args.all):
 		startallWebsites()
 		startAllScripts()
+		startAllCommands()
 	elif(args.web):
 		startallWebsites()
 	elif(args.ex):
 		startAllScripts()
+	elif(args.co):
+		startAllCommands()
 	main()
 	#website()
