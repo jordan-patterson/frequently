@@ -7,7 +7,7 @@
 
 ### - Specify what executables, commands you want to run or websites you want to open whenever you start the script
 
-##Installation
+## Installation
 ```bash
 $ #clone the repository
 $ git clone https://github.com/jordan-patterson/frequently.git
@@ -18,6 +18,8 @@ $ source env/bin/activate
 $
 $ #install requirements
 $ pip3 install -r requirements.txt
+$ 
+$ #add frequently to your path
 $ ./install.py
 ```
 
