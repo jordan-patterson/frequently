@@ -2,7 +2,7 @@
 # https://github.com/Damnever/pigar
 
 # build/scripts-3.6/freq.py: 6
-PyYAML == 3.12
+PyYAML == 5.4
 
 # build/scripts-3.6/freq.py: 5
 clmenu == 1.0
